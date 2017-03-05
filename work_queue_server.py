@@ -13,6 +13,18 @@ import pika
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
+"""
+ack을 이용하면 consumer가 죽더라도 메시지 손실을 막을 수 있다.
+하지만 RabbitMQ server에 문제가 생긴다면 여전히 메시지가 손실될 가능성이 있다.
+그러므로 queue와 메시지 두 가지 모두를 내구성있게 만들어야 한다.
+
+먼저 queue를 내구성있게 만들기 위해 durable=True로 선언한다.
+기존에 이미 선언되었던 queue는 변경할 수 없다.
+durable=True는 producer와 consumer에 모두 필요하다.
+
+그리고 delivery_mode=2를 정의하여 메시지를 영구적으로 표시한다.(?)
+-> 이거 무슨 의미인지 잘 모르겠다.
+"""
 channel.queue_declare(queue='task_queue', durable=True)
 
 message = ' '.join(sys.argv[1:]) or "Hello World!"
