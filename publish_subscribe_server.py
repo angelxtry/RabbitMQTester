@@ -23,16 +23,31 @@ default exchange를 사용하면 routing_key에 지정된 queue에 메시지를 
 이번 예제에서는 모든 message를 브로드캐스팅하고, 오래된 메시지가 아닌 현재 흘러가는 메시지를 수신할 것이다.
 이것을 수행하기 위해 두 가지가 필요하다.
 
-첫째, worker가 RabbitMQ에 접속할 때마다 새로만들어진 빈 queue가 필요하다.
-이것을 위해 서버가 임의로 이름을 만든 queue를 생성한다.
-queue_declare 함수에 파라미터를 넣지 않으면 이와 같은 queue를 만들 수 있다.
+첫째, worker가 RabbitMQ에 접속할 때 마다 빈 queue를 새로 생성한다.
+이렇게 만들어진 queue는 RabbitMQ가 임의로 이름을 부여한다.
+queue_declare 함수에 queue='QUEUE_NAME' 를 넣지 않으면
+임의로 이름이 부여된 빈 queue를 생성할 수 있다.
 이렇게 만들어진 queue의 이름은 result.method.queue로 사용할 수 있다.
 
-둘쨰, worker가 연결을 해제하면 queue를 삭제해야한다.
-이것은 exclusive flag를 이용하여 처리한다.
+둘째, worker가 연결을 해제하면 임시로 생성했던 queue를 삭제하기위해
+exclusive=True 플래그를 설정한다.
 
 fanout exchange와 queue가 생성되었다면 둘을 연결해야한다. 이것을 binding이라고 한다.
 binding 목록은 rabbitmqctl list_bindings로 확인할 수 있다.
 
 fanout exchange와 queue를 생성하고 둘을 binding했다면 메시지를 전달할 준비가 끝났다.
+주의할 점은 fanout exchange는 routing_key를 빈 문자열로 지정한다는 것이다.
 """
+import sys
+import pika
+
+connection = pika.BlockingConnection(pika.ConnectionParameters(
+    host='localhost'))
+channel = connection.channel()
+
+channel.exchange_declare(exchange='logs', type='fanout')
+
+message = ' '.join(sys.argv[1:]) or "info: Hello World"
+channel.basic_publish(exchange='logs', routing_key='', body=message)
+print("[x] Sent %r" % message)
+connection.close()
