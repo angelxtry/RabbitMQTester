@@ -26,12 +26,13 @@ queue_name = result.method.queue
 """
 fanout exchange와 queue가 생성되었다면 둘을 연결해야한다. 이것은 바인딩이라고 한다.
 """
-channel.queue_bind(exchange='log', queue=queue_name)
+channel.queue_bind(exchange='logs', queue=queue_name)
 
 print('[*] Waiting for logs. To exit press CTRL+C')
 
 def callback(ch, method, properties, body):
     print("[x] %r" % body)
+    connection.close()
 
 channel.basic_consume(callback, queue=queue_name, no_ack=True)
 

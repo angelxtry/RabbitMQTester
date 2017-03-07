@@ -10,7 +10,8 @@ Work queue를 사용하면 업무를 쉽게 병렬처리 할 수 있다.
 import sys
 import pika
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters(
+    host='localhost'))
 channel = connection.channel()
 
 """
@@ -36,4 +37,3 @@ channel.basic_publish(exchange='',
                       ))
 print("[x] Sent %r" % message)
 connection.close()
-
